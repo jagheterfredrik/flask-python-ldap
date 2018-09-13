@@ -1,3 +1,4 @@
+import certifi
 import ldap
 from ldap.modlist import addModlist, modifyModlist
 from flask import current_app, _app_ctx_stack
@@ -20,13 +21,9 @@ class LDAP(object):
         uri = current_app.config['LDAP_URI']
         conn = ldap.initialize(uri)
         if (uri.startswith('ldaps:')):
-            conn.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
-            conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
-            conn.set_option(ldap.OPT_X_TLS_DEMAND, True)
-        else:
-            conn.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_NEVER)
-            conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-            conn.set_option(ldap.OPT_X_TLS_DEMAND, False)
+            conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,ldap.OPT_X_TLS_DEMAND)
+            conn.set_option(ldap.OPT_X_TLS_CACERTFILE, certifi.where())
+            conn.set_option(ldap.OPT_X_TLS_NEWCTX,0)
         conn.simple_bind_s(current_app.config['LDAP_BINDDN'], current_app.config['LDAP_SECRET'])
         return conn
 
