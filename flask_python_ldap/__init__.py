@@ -189,11 +189,14 @@ class Entry(object, metaclass=ModelBase):
 
     def save(self):
         if self.new:
+            add_attributes = self.prep_attr_dict_for_ldap(self._attributes)
             add_list = list({
                 'objectclass': [x.encode() for x in self.object_classes],
-                **self.prep_attr_dict_for_ldap(self._attributes)
+                **add_attributes
             }.items())
             current_app.extensions['ldap'].connection.add_s(self.dn, add_list)
+            self._initial_attributes = add_attributes
+            self.new = False
         else:
             new_attributes = self.prep_attr_dict_for_ldap(self._attributes)
             mod_list = modifyModlist(self._initial_attributes, new_attributes)
