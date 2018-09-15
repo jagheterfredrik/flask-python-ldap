@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='flask-python-ldap',
-    version='0.0.3',
+    version='0.0.4',
     url = 'https://github.com/jagheterfredrik/flask-python-ldap',
     author = 'Fredrik Gustafsson',
     author_email = 'jagheterfredrik@gmail.com',
