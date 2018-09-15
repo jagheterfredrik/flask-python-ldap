@@ -201,6 +201,7 @@ class Entry(object, metaclass=ModelBase):
             new_attributes = self.prep_attr_dict_for_ldap(self._attributes)
             mod_list = modifyModlist(self._initial_attributes, new_attributes)
             current_app.extensions['ldap'].connection.modify_s(self.dn, mod_list)
+            self._initial_attributes = new_attributes
         return True
 
     def delete(self):
