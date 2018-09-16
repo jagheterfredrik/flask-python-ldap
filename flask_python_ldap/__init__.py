@@ -90,16 +90,27 @@ class ModelBase(type):
     object_classes = ['top']
 
     def __init__(cls, name, bases, ns):
-        cls._attr_defs = {}
-        cls._ldap_attrs = set()
+        _attr_defs = {}
+        _ldap_attrs = set()
+        attrs_to_delete = list()
+
+        for base in bases:
+            if hasattr(base, '_attr_defs'):
+                _attr_defs.update(base._attr_defs)
+            if hasattr(base, '_ldap_attrs'):
+                _ldap_attrs.update(base._ldap_attrs)
 
         for key, value in ns.items():
             if isinstance(value, Attribute):
-                cls._attr_defs[key] = value
-                cls._ldap_attrs.add(value.ldap_name)
+                _attr_defs[key] = value
+                _ldap_attrs.add(value.ldap_name)
+                attrs_to_delete.append(key)
 
-        for key in cls._attr_defs.keys():
+        for key in attrs_to_delete:
             delattr(cls, key)
+
+        cls._attr_defs = _attr_defs
+        cls._ldap_attrs = _ldap_attrs
 
     @property
     def query(cls):
@@ -149,6 +160,7 @@ class Entry(object, metaclass=ModelBase):
     def prep_attr_dict_for_ldap(cls, d):
         attrs = {}
         for key, value in d.items():
+            ldap_value = None
             if isinstance(value, list):
                 ldap_value = [x.encode() for x in value if isinstance(x, str)]
             elif isinstance(value, str):
@@ -178,11 +190,6 @@ class Entry(object, metaclass=ModelBase):
             self._attributes[key] = self.normalize_for_ldap(value)
         else:
             object.__setattr__(self, key, value)
-
-    def __delattr__(self, key):
-        if key not in self._attributes:
-            raise AttributeError('no such attribute')
-        self._attributes[key] = None
 
     def __repr__(self):
         return str((self.dn, [(k, getattr(self, k)) for k in self._attributes.keys()]))
