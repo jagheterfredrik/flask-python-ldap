@@ -22,7 +22,11 @@ class LDAP(object):
         conn = ldap.initialize(uri)
         if (uri.startswith('ldaps:')):
             conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,ldap.OPT_X_TLS_DEMAND)
-            conn.set_option(ldap.OPT_X_TLS_CACERTFILE, certifi.where())
+            # OPT_X_TLS_CACERTFILE does not work on OS X for some reason but validation seem to work
+            try:
+                conn.set_option(ldap.OPT_X_TLS_CACERTFILE, certifi.where())
+            except ValueError:
+                pass
             conn.set_option(ldap.OPT_X_TLS_NEWCTX,0)
         conn.simple_bind_s(current_app.config['LDAP_BINDDN'], current_app.config['LDAP_SECRET'])
         return conn
