@@ -1,7 +1,32 @@
 import certifi
 import ldap
-from ldap.modlist import addModlist, modifyModlist
+from ldap.modlist import addModlist
 from flask import current_app, _app_ctx_stack
+
+
+def modify_modlist(oldAttrs, newAttrs):
+    modifications = []
+    oldKeySet = set(oldAttrs.keys())
+    newKeySet = set(newAttrs.keys())
+    for key in oldKeySet - newKeySet:
+        modifications.append((ldap.MOD_DELETE, key, None))
+    for key, newValue in newAttrs.items():
+        oldValue = oldAttrs.get(key, [])
+        if not newValue:
+            modifications.append((ldap.MOD_DELETE, key, None))
+        else:
+            oldValueSet = set(oldValue)
+            newValueSet = set(newValue)
+            addList = list(newValueSet - oldValueSet)
+            removeList = list(oldValueSet - newValueSet)
+            if addList and removeList:
+                modifications.append((ldap.MOD_REPLACE, key, newValue))
+            elif addList:
+                modifications.append((ldap.MOD_ADD, key, addList))
+            elif removeList:
+                modifications.append((ldap.MOD_DELETE, key, removeList))
+
+    return modifications
 
 
 class LDAP(object):
@@ -210,7 +235,7 @@ class Entry(object, metaclass=ModelBase):
             self.new = False
         else:
             new_attributes = self.prep_attr_dict_for_ldap(self._attributes)
-            mod_list = modifyModlist(self._initial_attributes, new_attributes)
+            mod_list = modify_modlist(self._initial_attributes, new_attributes)
             current_app.extensions['ldap'].connection.modify_s(self.dn, mod_list)
             self._initial_attributes = new_attributes
         return True
