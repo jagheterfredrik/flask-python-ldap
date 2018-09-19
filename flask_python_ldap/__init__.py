@@ -20,7 +20,12 @@ def modify_modlist(oldAttrs, newAttrs):
             addList = list(newValueSet - oldValueSet)
             removeList = list(oldValueSet - newValueSet)
             if addList and removeList:
-                modifications.append((ldap.MOD_REPLACE, key, newValue))
+                # Minimize the number of values that needs to be transferred
+                if len(addList + removeList) >= len(newValue):
+                    modifications.append((ldap.MOD_REPLACE, key, newValue))
+                else:
+                    modifications.append((ldap.MOD_DELETE, key, removeList))
+                    modifications.append((ldap.MOD_ADD, key, addList))
             elif addList:
                 modifications.append((ldap.MOD_ADD, key, addList))
             elif removeList:
