@@ -1,9 +1,11 @@
 """Tests for the ORM."""
+import ldap
 import pytest
 import uuid
 
 from flask_python_ldap import Entry, Attribute
 
+LDAP_ROOTDN = 'dc=planetexpress,dc=com'
 LDAP_AUTH_BASEDN = 'ou=people,dc=planetexpress,dc=com'
 LDAP_AUTH_ATTR = 'mail'
 LDAP_AUTH_SEARCH_FILTER = '(objectClass=inetOrgPerson)'
@@ -27,16 +29,12 @@ class User(Entry):
     givenname = Attribute('givenName')
 
 
-class Account(User):
-    # LDAP meta-data
-    object_classes = ['posixAccount']
+class RootEntry(Entry):
+    base_dn = LDAP_ROOTDN
+    entry_rdn = 'cn'
+    object_classes = ['top']
 
-    # posixAccount
-    uidnumber = Attribute('uidNumber')
-    gidnumber = Attribute('gidNumber')
-    shell = Attribute('loginShell')
-    home = Attribute('homeDirectory')
-    password = Attribute('userPassword')
+    name = Attribute('cn')
 
 
 def test_attrs():
@@ -198,3 +196,7 @@ def test_delete(app, test_name):
     ag.title = 'lol'
     ag.save()
     assert User.query.filter(f'(cn={test_name})').first().title == 'lol'
+
+def test_base(app, test_name):
+    assert len(RootEntry.query.all()) > 1
+    assert len(RootEntry.query.base(ldap.SCOPE_BASE).all()) == 1
