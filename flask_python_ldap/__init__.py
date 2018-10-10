@@ -232,6 +232,9 @@ class Entry(object, metaclass=ModelBase):
     def __repr__(self):
         return str((self.dn, [(k, getattr(self, k)) for k in self._attributes.keys()]))
 
+    def represent(self):
+        return {key: getattr(self, key) for key in self._attr_defs}
+    
     def save(self):
         if self.new:
             add_attributes = self.prep_attr_dict_for_ldap(self._attributes)
