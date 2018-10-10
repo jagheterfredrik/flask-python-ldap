@@ -114,9 +114,17 @@ class BaseQuery(object):
         self._base = base
         return self
 
+    def get(self, dn):
+    if dn and isinstance(dn, str) and self.model.entry_rdn in dn:
+        s = dn.split(",")
+        if s and len(s) >= 1:
+            self._filter = "(%s)" % s[0]
+            return self.first()
+    return None
+    
     def all(self):
         return [self.model.from_search(*result) for result in self._search()]
-
+    
     def first(self):
         res = self._search()
         return self.model.from_search(*res[0]) if res else None
