@@ -140,12 +140,12 @@ class BaseQuery(object):
         return self
 
     def get(self, dn):
-    if dn and isinstance(dn, str) and self.model.entry_rdn in dn:
-        s = dn.split(",")
-        if s and len(s) >= 1:
-            self._filter = "(%s)" % s[0]
-            return self.first()
-    return None
+        if dn and isinstance(dn, str) and self.model.entry_rdn in dn:
+            s = dn.split(",")
+            if s and len(s) >= 1:
+                self._filter = "(%s)" % s[0]
+                return self.first()
+        return None
     
     def all(self):
         return [self.model.from_search(*result) for result in self._search()]
