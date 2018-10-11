@@ -232,10 +232,13 @@ class Entry(object, metaclass=ModelBase):
     def __repr__(self):
         return str((self.dn, [(k, getattr(self, k)) for k in self._attributes.keys()]))
 
-    def represent(self, exclude_empty=False):
+    def represent(self, exclude_empty=False, exclude_always=None):
         represented = {key: getattr(self, key) for key in self._attr_defs}
         if exclude_empty:
-            return {key: value for key, value in represented.items() if value}
+            represented = {key: value for key, value in represented.items() if value}
+        if exclude_always:
+            for key in exclude_always:
+                del represented[key]
         return represented
     
     def save(self):
