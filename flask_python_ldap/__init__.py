@@ -106,8 +106,32 @@ class BaseQuery(object):
         except ldap.NO_SUCH_OBJECT:
             return []
 
-    def filter(self, filter):
-        self._filter = filter
+    def filter(self, legacy=None, **kwargs):
+        if legacy:
+            self._filter = legacy
+            return self
+        self._filter = str()
+        for key, value in kwargs.items():
+            splatted_key = key.split("__")
+            if len(splatted_key) > 1:
+                attribute, compare = splatted_key
+            else:
+                attribute, compare = splatted_key[0], None
+            if isinstance(value, list):
+                value = value[0]
+            if attribute in self.model._attr_defs.keys():
+                ldap_attribute_name = self.model._attr_defs[attribute].ldap_name
+                if compare:
+                    if compare == "notequal":
+                        self._filter += "(!(%s=%s))" % (ldap_attribute_name, value)
+                    elif compare == "startswith":
+                        self._filter += "(%s=%s*)" % (ldap_attribute_name, value)
+                    elif compare == "endswith":
+                        self._filter += "(%s=*%s)" % (ldap_attribute_name, value)
+                    elif compare == "contains":
+                        self._filter += "(%s=*%s*)" % (ldap_attribute_name, value)
+                else:
+                    self._filter += "(%s=%s)" % (ldap_attribute_name, value)
         return self
 
     def base(self, base):
