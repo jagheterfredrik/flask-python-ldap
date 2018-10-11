@@ -89,6 +89,7 @@ class BaseQuery(object):
         self.model = model
         self._filter = None
         self._base = ldap.SCOPE_SUBTREE
+        self._attrlist = list(self.model._ldap_attrs)
 
     def _search(self):
         object_class_filter = ''.join([f'(objectclass={cls})' for cls in self.model.object_classes])
@@ -101,7 +102,7 @@ class BaseQuery(object):
                 self.model.base_dn,
                 self._base,
                 full_filter,
-                attrlist=list(self.model._ldap_attrs)
+                attrlist=self._attrlist
             )
         except ldap.NO_SUCH_OBJECT:
             return []
@@ -120,6 +121,13 @@ class BaseQuery(object):
     def first(self):
         res = self._search()
         return self.model.from_search(*res[0]) if res else None
+    
+    def fields(self, *args):
+        self._attrlist = list()
+        for arg in args:
+            if arg in self.model._attr_defs.keys():
+                self._attrlist.append(self.model._attr_defs[arg].ldap_name)
+        return self
 
 
 class ModelBase(type):
