@@ -119,7 +119,7 @@ class BaseQuery(object):
                 attribute, compare = splatted_key[0], None
             if isinstance(value, list):
                 value = value[0]
-            if attribute in self.model._attr_defs.keys():
+            if attribute in self.model._attr_defs:
                 ldap_attribute_name = self.model._attr_defs[attribute].ldap_name
                 if compare:
                     if compare == "notequal":
