@@ -77,10 +77,11 @@ class LDAP(object):
 
 class Attribute(object):
 
-    def __init__(self, ldap_name, default=None, is_list=False):
+    def __init__(self, ldap_name, default=None, is_list=False, is_required=True):
         self.ldap_name = ldap_name
         self.default = default
         self.is_list = is_list
+        self.is_required = is_required
 
 
 class BaseQuery(object):
