@@ -157,7 +157,7 @@ class BaseQuery(object):
     def fields(self, *args):
         self._attrlist = list()
         for arg in args:
-            if arg in self.model._attr_defs.keys():
+            if arg in self.model._attr_defs:
                 self._attrlist.append(self.model._attr_defs[arg].ldap_name)
         return self
 
