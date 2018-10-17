@@ -96,15 +96,12 @@ class BaseQuery(object):
             full_filter = f'(&(&{object_class_filter}){self._filter})'
         else:
             full_filter = f'(&{object_class_filter})'
-        try:
-            return current_app.extensions['ldap'].connection.search_ext_s(
+        return current_app.extensions['ldap'].connection.search_ext_s(
                 self.model.base_dn,
                 self._base,
                 full_filter,
                 attrlist=list(self.model._ldap_attrs)
             )
-        except ldap.NO_SUCH_OBJECT:
-            return []
 
     def filter(self, filter):
         self._filter = filter
