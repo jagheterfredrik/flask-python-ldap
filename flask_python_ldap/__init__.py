@@ -110,7 +110,7 @@ class BaseQuery(object):
         if legacy:
             self._filter = legacy
             return self
-        self._filter = str()
+        self._filter = str() if not self._filter else self._filter
         for key, value in kwargs.items():
             splatted_key = key.split("__")
             if len(splatted_key) > 1:
