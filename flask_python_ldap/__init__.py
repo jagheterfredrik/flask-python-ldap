@@ -89,6 +89,7 @@ class BaseQuery(object):
         self.model = model
         self._filter = None
         self._base = ldap.SCOPE_SUBTREE
+        self._base_dn = self.model.base_dn
 
     def _search(self):
         object_class_filter = ''.join([f'(objectclass={cls})' for cls in self.model.object_classes])
@@ -98,7 +99,7 @@ class BaseQuery(object):
             full_filter = f'(&{object_class_filter})'
         try:
             return current_app.extensions['ldap'].connection.search_ext_s(
-                self.model.base_dn,
+                self._base_dn,
                 self._base,
                 full_filter,
                 attrlist=list(self.model._ldap_attrs)
@@ -112,6 +113,10 @@ class BaseQuery(object):
 
     def base(self, base):
         self._base = base
+        return self
+    
+    def base_dn(self, base_dn):
+        self._base_dn = base_dn
         return self
 
     def all(self):
