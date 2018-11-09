@@ -123,10 +123,10 @@ class BaseQuery(object):
         return self.model.from_search(*res[0]) if res else None
     
     def fields(self, *args):
-        self._attrlist = list()
-        for arg in args:
-            if arg in self.model._attr_defs:
-                self._attrlist.append(self.model._attr_defs[arg].ldap_name)
+        self._attrlist = [
+            self.model._attr_defs[arg].ldap_name for arg in args
+            if arg in self.model._attr_defs.keys()
+        ]
         return self
 
 
